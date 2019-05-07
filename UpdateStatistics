@@ -1,0 +1,33 @@
+CREATE PROCEDURE UpdateStatistics
+AS
+BEGIN
+declare 
+	@tablename varchar(255),
+	@tablename_header varchar(255),
+	@yyyymmddhhiiss varchar(255)
+
+declare tnames_cursor cursor for 
+select convert(varchar(30),o.name) as tbname from sysobjects o where type = 'U' order by 1
+
+open tnames_cursor
+FETCH tnames_cursor INTO @tablename
+ 
+while ( @@sqlstatus != 2 )
+begin
+	if (@@sqlstatus != 1)
+	begin
+		select @yyyymmddhhiiss = getdate()
+		select @tablename_header = '【'+ @yyyymmddhhiiss +'】'+ 'update all statistics ' + rtrim(upper(@tablename)) + '..............'
+		print @tablename_header
+		exec ('UPDATE STATISTICS ' + @tablename )
+	end
+	FETCH tnames_cursor INTO @tablename
+end
+select @tablename_header = 'Database tables update statistics processing completed.'
+print @tablename_header
+
+print 'Statistics have been updated for all tables.'
+                                                                                                    
+      CLOSE tnames_cursor                                                                                       
+      DEALLOCATE CURSOR tnames_cursor    
+END
